@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket IO</title>
+</head>
+<body>
+    <div id="homepage">
+        <h1>Me.ssenger</h1>
+        <div>
+            <input type="text" id="nama_user" placeholder="Nama User">
+            <button type="button" id="btn_login">Login</button>
+        </div>
+    </div>
+
+    <div id="chatpage" class="hidden">
+        <ul id="messages"></ul>
+        <form>
+            <input type="text" id="text_box" placeholder="Type a message and hit send">
+            <button type="button" id="btn_send">Send</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        var socket = io();
+        var user = '';
+        var pesan = '';
+
+        $('#btn_send').click(function(){
+            pesan = $('#text_box').val();
+            socket.emit('Pesanmasuk', user,pesan);
+            $('#text_box').val('');
+            return false;
+        });
+
+        socket.on('userlog', function(data){
+            $('#messages').append('<li>' + data + '</li>');
+        });
+
+        socket.on('pesanbaru', function(person,msg){
+            var clock = new Date();
+            var hours = clock.getHours();
+            var minutes = clock.getMinutes();
+            var seconds = clock.getSeconds();
+            var clock_now = hours + ":" + minutes + ":" + seconds;
+            $('#messages').append($('<li>').text(person + ' at ' + clock_now + ' | ' + msg));
+        });
+
+        $('#btn_login').click(function(){
+            user = $('#nama_user').val();
+            if(user.trim() == ''){
+                alert('It seems you have not entered your name');
+                return false;
+            }
+            socket.emit('RegistName', user);
+        });
+
+        socket.on('ServerRespond', function(data,value){
+            alert(data);
+            if(value == true){
+                $('#homepage').addClass('hidden');
+                $('#chatpage').removeClass('hidden');
+            }else{
+                return value;
+            }
+        });
+    </script>
+</body>
+<style>
+    body{
+    margin: 0;
+}
+ul{
+    margin: 0;
+    padding: 0;
+}
+form { 
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background: #1da1f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+li{
+    padding: 5px;
+    list-style: none;
+}
+li:nth-child(even){
+    background-color: #333;
+    color:white
+}
+li:nth-child(odd){
+    background-color: #eee;
+    color:black;
+}
+#nama_user{
+    border-radius: 10px;
+    text-align: center;
+    float: left;
+    width: 80%;
+    height: 30px;
+}
+#text_box{
+    border-radius: 10px;
+    float: left;
+    width: 30%;
+    height: 30px;
+    border: none;
+}
+
+button#btn_login{
+    border-radius: 10px;
+    float: left;
+    width: 60%;
+    height: 33px;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+    color: #fff;
+}
+button#btn_send {
+    border-radius: 10px;
+    float: left;
+    width: 10%;
+    height: 33px;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+    color: #fff;
+}
+
+.hidden{
+    display: none !important;
+}
+
+#homepage{
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgb(92, 182, 189);
+}
+
+#homepage div{
+    width: 10%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: column;
+}
+
+#homepage h1{
+    color: beige;
+    /* font outline */
+    text-shadow: 2px 2px 2px black;
+}
+</style>
+</html>
