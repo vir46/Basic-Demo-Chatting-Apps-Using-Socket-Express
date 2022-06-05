@@ -7,7 +7,7 @@
     <title>Socket IO</title>
 </head>
 <body>
-    <div id="homepage">
+    <div id="homepage"  >
         <h1>Me.ssenger</h1>
         <div>
             <input type="text" id="nama_user" placeholder="Nama User">
@@ -15,8 +15,14 @@
         </div>
     </div>
 
-    <div id="chatpage" class="hidden">
+    <div id="chatpage"  class="hidden">
         <ul id="messages"></ul>
+        <div id="useronline_container">
+            <span>User Online</span>
+            <ul id="user_online">
+                <!-- <li>User 1</li> -->
+            </ul>
+        </div>
         <form>
             <input type="text" id="text_box" placeholder="Type a message and hit send">
             <button type="button" id="btn_send">Send</button>
@@ -29,6 +35,7 @@
         var user = '';
         var pesan = '';
 
+        // User Pressing Send Button
         $('#btn_send').click(function(){
             pesan = $('#text_box').val();
             socket.emit('Pesanmasuk', user,pesan);
@@ -36,10 +43,20 @@
             return false;
         });
 
+        // User login logout logging
         socket.on('userlog', function(data){
             $('#messages').append('<li>' + data + '</li>');
         });
 
+        // Listing the Online User
+        socket.on('showOnline', function(usersdata){
+            $('#user_online').empty();
+            for(var i = 0; i < usersdata.length; i++){
+                $('#user_online').append('<li id="username_'+usersdata[i]+'">'+usersdata[i]+'</li>');
+            }
+        });
+
+        // Listening new message from server
         socket.on('pesanbaru', function(person,msg){
             var clock = new Date();
             var hours = clock.getHours();
@@ -49,6 +66,8 @@
             $('#messages').append($('<li>').text(person + ' at ' + clock_now + ' | ' + msg));
         });
 
+
+        // If User clicked on Login button
         $('#btn_login').click(function(){
             user = $('#nama_user').val();
             if(user.trim() == ''){
@@ -58,6 +77,7 @@
             socket.emit('RegistName', user);
         });
 
+        // Server Respond After User Clicked on Login Button
         socket.on('ServerRespond', function(data,value){
             alert(data);
             if(value == true){
@@ -70,7 +90,7 @@
     </script>
 </body>
 <style>
-    body{
+body{
     margin: 0;
 }
 ul{
@@ -88,15 +108,15 @@ form {
     align-items: center;
     gap: 10px;
 }
-li{
+#message li{
     padding: 5px;
     list-style: none;
 }
-li:nth-child(even){
+#message li:nth-child(even){
     background-color: #333;
     color:white
 }
-li:nth-child(odd){
+#message li:nth-child(odd){
     background-color: #eee;
     color:black;
 }
@@ -158,8 +178,55 @@ button#btn_send {
 
 #homepage h1{
     color: beige;
-    /* font outline */
     text-shadow: 2px 2px 2px black;
+}
+
+#useronline_container{
+    width: 160px;
+    min-height: 40px;
+    height: min-content;
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: black;
+    color: white;
+}
+
+#useronline_container span{
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 2px 2px 2px black;
+}
+
+#user_online{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#user_online li{
+
+    background-color: black;
+    color: white;
+    list-style: none;
+}
+
+#user_online li:before {
+    content: "";
+    display: inline-flex;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(0, 250, 146);
+    border-radius: 50%;
+    margin-right: 7px;
 }
 </style>
 </html>

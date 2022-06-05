@@ -22,6 +22,7 @@ io.on('connection', function(socket){
             alluser.push(name);
             users[socket.id] = name;
             socket.broadcast.emit('userlog', name + ' has entered the chat');
+            io.emit('showOnline', alluser);
         }
     });
 
