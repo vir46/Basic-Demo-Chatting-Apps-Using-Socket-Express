@@ -20,7 +20,6 @@
         <div id="useronline_container">
             <span>User Online</span>
             <ul id="user_online">
-                <!-- <li>User 1</li> -->
             </ul>
         </div>
         <form>
@@ -32,14 +31,20 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script>
         var socket = io();
+        var isTyping = false;
         var user = '';
         var pesan = '';
 
         // User Pressing Send Button
         $('#btn_send').click(function(){
             pesan = $('#text_box').val();
+            if(pesan == ''){
+                return false;
+            }
             socket.emit('Pesanmasuk', user,pesan);
             $('#text_box').val('');
+            isTyping = false;
+            socket.emit('stoptyping', user);
             return false;
         });
 
@@ -55,6 +60,7 @@
                 $('#user_online').append('<li id="username_'+usersdata[i]+'">'+usersdata[i]+'</li>');
             }
         });
+
 
         // Listening new message from server
         socket.on('pesanbaru', function(person,msg){
@@ -72,6 +78,7 @@
             user = $('#nama_user').val();
             if(user.trim() == ''){
                 alert('It seems you have not entered your name');
+                user = '';
                 return false;
             }
             socket.emit('RegistName', user);
@@ -86,6 +93,24 @@
             }else{
                 return value;
             }
+        });
+
+        // When this client is typing
+        $('#text_box').keypress(function(){
+            if(isTyping == false){
+                socket.emit('typing', user);
+                isTyping = true;
+            }
+        });
+
+        // When someone is typing
+        socket.on('typing', function(data){
+            $('#messages').append('<li class="typinganimate" id="typing_stat_'+data+'">' + data + ' is typing...</li>');
+        });
+
+        // When someone stop typing
+        socket.on('stopTyping', function(data){
+            $('#typing_stat_'+data).remove();
         });
     </script>
 </body>
@@ -108,15 +133,15 @@ form {
     align-items: center;
     gap: 10px;
 }
-#message li{
+#messages li{
     padding: 5px;
     list-style: none;
 }
-#message li:nth-child(even){
+#messages li:nth-child(even){
     background-color: #333;
     color:white
 }
-#message li:nth-child(odd){
+#messages li:nth-child(odd){
     background-color: #eee;
     color:black;
 }
@@ -227,6 +252,24 @@ button#btn_send {
     background-color: rgb(0, 250, 146);
     border-radius: 50%;
     margin-right: 7px;
+}
+
+.typinganimate{
+    background-color: yellow !important;
+    color: red !important;
+    animation: blinkeffect 2s infinite ;
+}
+
+@keyframes blinkeffect {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 </style>
 </html>
